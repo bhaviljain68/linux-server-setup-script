@@ -7,6 +7,10 @@
 #            sudo ./setup.sh --dry-run  # simulate only
 ###############################################################################
 set -euo pipefail
+
+DRY_RUN=0
+[[ "${1:-}" == "--dry-run" ]] && DRY_RUN=1 && echo "*** DRY-RUN MODE ***"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOGFILE="$SCRIPT_DIR/bootstrap.log"
 exec > >(tee -a "$LOGFILE") 2>&1
@@ -19,8 +23,8 @@ ensure_file() {
 }
 
 
-DRY_RUN=0
-[[ "${1:-}" == "--dry-run" ]] && DRY_RUN=1 && echo "*** DRY-RUN MODE ***"
+
+
 
 ### Helper – run or echo ######################################################
 run() { if ((DRY_RUN)); then echo "DRY: $*"; else eval "$*"; fi; }
