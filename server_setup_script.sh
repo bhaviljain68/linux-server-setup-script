@@ -23,8 +23,8 @@ ensure_file() {
 }
 
 
-
-
+# before the first whiptail prompt
+exec 3>&1 4>&2              # save TTY handles
 
 ### Helper – run or echo ######################################################
 run() { if ((DRY_RUN)); then echo "DRY: $*"; else eval "$*"; fi; }
@@ -107,6 +107,9 @@ Proceed?" 15 60 || {
     echo "Cancelled."
     exit 0
 }
+
+# just AFTER the final confirmation dialog:
+exec 1> >(tee -a "$LOGFILE") 2>&1   # start logging to file
 
 ### 3. Begin installation #####################################################
 step 5 "Creating user and SSH"
