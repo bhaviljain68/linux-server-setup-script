@@ -10,6 +10,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOGFILE="$SCRIPT_DIR/bootstrap.log"
 exec > >(tee -a "$LOGFILE") 2>&1
+ensure_file() {
+  local file=$1
+  [[ -f $file ]] && return
+  (( DRY_RUN )) && { echo "DRY: would create $file"; return; }
+  mkdir -p "$(dirname "$file")"
+  touch "$file"
+}
+
 
 DRY_RUN=0
 [[ "${1:-}" == "--dry-run" ]] && DRY_RUN=1 && echo "*** DRY-RUN MODE ***"
@@ -46,7 +54,14 @@ while true; do
         "8.0" "" "8.1" "" "8.2" "(LTS)" "8.3" "(latest)" 3>&1 1>&2 2>&3)
 
     # Build extension list dynamically
-    mapfile -t ALL_EXT < <(apt-cache pkgnames "php$PHP_VERSION-" | sed "s/php$PHP_VERSION-//" | sort)
+    # mapfile -t ALL_EXT < <(apt-cache pkgnames "php$PHP_VERSION-" | sed "s/php$PHP_VERSION-//" | sort)
+
+    mapfile -t ALL_EXT < <(
+        apt-cache pkgnames "php$PHP_VERSION-" # version-scoped
+        apt-cache pkgnames "php-"             # generic PECL
+    ) | grep -Ev "php($PHP_VERSION|-common|-cli|-fpm)" |
+        sed -E "s/^php$PHP_VERSION-//;s/^php-//" | sort -u
+
     PRESEL=("bcmath" "curl" "mbstring" "pgsql" "xml" "zip" "intl" "gd" "imagick" "soap" "sqlite3" "bz2" "readline" "opcache" "dev")
     EXT_DIALOG=()
     for ext in "${ALL_EXT[@]}"; do
@@ -120,6 +135,7 @@ step 15 "Installing Caddy"
 run "apt-get install -y caddy"
 
 # Write global email
+ensure_file /etc/caddy/Caddyfile
 cat >/etc/caddy/Caddyfile <<EOF
 {
     email $ACME_EMAIL
@@ -128,7 +144,14 @@ EOF
 
 step 20 "Installing PHP $PHP_VERSION + extensions"
 PHP_PKGS="php$PHP_VERSION php$PHP_VERSION-fpm php$PHP_VERSION-cli php$PHP_VERSION-common"
-for ext in $PHP_EXT_SELECTED; do PHP_PKGS+=" php$PHP_VERSION-$ext"; done
+for ext in $PHP_EXT_SELECTED; do
+    # PHP_PKGS+=" php$PHP_VERSION-$ext"
+    if apt-cache show "php$PHP_VERSION-$ext" &>/dev/null; then
+        PHP_PKGS+=" php$PHP_VERSION-$ext"
+    else
+        PHP_PKGS+=" php-$ext"
+    fi
+done
 run "apt-get install -y $PHP_PKGS"
 run "systemctl enable --now php$PHP_VERSION-fpm"
 
