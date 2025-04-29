@@ -12,8 +12,7 @@ DRY_RUN=0
 [[ "${1:-}" == "--dry-run" ]] && DRY_RUN=1 && echo "*** DRY-RUN MODE ***"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LOGFILE="$SCRIPT_DIR/bootstrap.log"
-exec > >(tee -a "$LOGFILE") 2>&1
+# exec > >(tee -a "$LOGFILE") 2>&1
 ensure_file() {
   local file=$1
   [[ -f $file ]] && return
@@ -53,9 +52,12 @@ BASE_DOMAIN=$(whiptail --inputbox "Base domain (include www.)\nExample: www.mysi
 DOMAIN_SLUG=$(basename "${BASE_DOMAIN#www.}" | cut -d'.' -f1)
 
 while true; do
-    PHP_VERSION=$(whiptail --title "PHP Version" --menu \
-        "Choose PHP version:" 15 50 5 \
-        "8.0" "" "8.1" "" "8.2" "(LTS)" "8.3" "(latest)" 3>&1 1>&2 2>&3)
+   while true ; do
+    PHP_VERSION=$(whiptail --title "PHP Version" --menu "Choose PHP version:" 15 50 5 \
+        "8.0" "" "8.1" "" "8.2" "(LTS)" "8.3" "(latest)" 3>&1 1>&2 2>&3) || {
+        echo "Cancelled."; exit 1; }
+    [[ -n $PHP_VERSION ]] && break
+    done
 
     # Build extension list dynamically
     # mapfile -t ALL_EXT < <(apt-cache pkgnames "php$PHP_VERSION-" | sed "s/php$PHP_VERSION-//" | sort)
@@ -109,7 +111,8 @@ Proceed?" 15 60 || {
 }
 
 # just AFTER the final confirmation dialog:
-exec 1> >(tee -a "$LOGFILE") 2>&1   # start logging to file
+LOGFILE="$SCRIPT_DIR/bootstrap.log"
+exec 1> >(tee -a "$LOGFILE") 2>&1
 
 ### 3. Begin installation #####################################################
 step 5 "Creating user and SSH"
