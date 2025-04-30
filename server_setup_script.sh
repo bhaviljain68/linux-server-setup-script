@@ -62,11 +62,16 @@ while true; do
     # Build extension list dynamically
     # mapfile -t ALL_EXT < <(apt-cache pkgnames "php$PHP_VERSION-" | sed "s/php$PHP_VERSION-//" | sort)
 
+    # mapfile -t ALL_EXT < <(
+    #     apt-cache pkgnames "php$PHP_VERSION-" # version-scoped
+    #     apt-cache pkgnames "php-"             # generic PECL
+    # ) | grep -Ev "php($PHP_VERSION|-common|-cli|-fpm)" |
+    #     sed -E "s/^php$PHP_VERSION-//;s/^php-//" | sort -u
     mapfile -t ALL_EXT < <(
-        apt-cache pkgnames "php$PHP_VERSION-" # version-scoped
-        apt-cache pkgnames "php-"             # generic PECL
-    ) | grep -Ev "php($PHP_VERSION|-common|-cli|-fpm)" |
-        sed -E "s/^php$PHP_VERSION-//;s/^php-//" | sort -u
+        { apt-cache pkgnames "php$PHP_VERSION-" && apt-cache pkgnames "php-"; } 2>/dev/null \
+        | grep -Ev "php($PHP_VERSION|-common|-cli|-fpm)" \
+        | sed -E "s/^php$PHP_VERSION-//;s/^php-//" | sort -u
+    )
 
     PRESEL=("bcmath" "curl" "mbstring" "pgsql" "xml" "zip" "intl" "gd" "imagick" "soap" "sqlite3" "bz2" "readline" "opcache" "dev")
     EXT_DIALOG=()
