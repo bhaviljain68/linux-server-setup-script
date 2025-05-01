@@ -41,7 +41,12 @@ if ((EUID != 0)); then
     exit 1
 fi
 
+# PGDG
+run "wget -qO /usr/share/keyrings/pgdg.gpg https://www.postgresql.org/media/keys/ACCC4CF8.asc"
+echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" >/etc/apt/sources.list.d/pgdg.list
+
 run "apt-get update -y"
+run "apt-get install -y whiptail"
 run "apt-get install -y software-properties-common curl wget gnupg lsb-release"
 
 # Ondrej PHP
@@ -146,10 +151,10 @@ run "apt-get install -y software-properties-common curl wget gnupg lsb-release"
 
 # Caddy
 run "curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy.gpg"
-echo "deb [signed-by=/usr/share/keyrings/caddy.gpg] https://dl.cloudsmith.io/public/caddy/stable/deb/ $(lsb_release -cs) main" >/etc/apt/sources.list.d/caddy.list
-# PGDG
-run "wget -qO /usr/share/keyrings/pgdg.gpg https://www.postgresql.org/media/keys/ACCC4CF8.asc"
-echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" >/etc/apt/sources.list.d/pgdg.list
+echo "deb [signed-by=/usr/share/keyrings/caddy-stable-archive-keyring.gpg] \
+  https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main" \
+  > /etc/apt/sources.list.d/caddy-stable.list
+
 
 run "apt-get update -y"
 
