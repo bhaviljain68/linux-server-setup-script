@@ -35,6 +35,13 @@ step() {
         whiptail --gauge "$msg..." 6 60 "$pct" <<<""
 }
 
+cache_run() { eval "$@"; }
+
+cache_run apt-get install -y software-properties-common curl wget gnupg lsb-release
+cache_run add-apt-repository -y ppa:ondrej/php
+cache_run apt-get update -y
+
+
 ### 0. Root check #############################################################
 if ((EUID != 0)); then
     echo "Run as root (use sudo)"
