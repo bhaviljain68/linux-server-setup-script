@@ -41,6 +41,14 @@ if ((EUID != 0)); then
     exit 1
 fi
 
+run "apt-get update -y"
+run "apt-get install -y software-properties-common curl wget gnupg lsb-release"
+
+# Ondrej PHP
+run "add-apt-repository -y ppa:ondrej/php"
+run "apt-get update -y" 
+
+
 ### 1. Interactive Prompts ####################################################
 NEW_USER=$(whiptail --inputbox "New SSH user (default: deployer)" 8 60 "deployer" 3>&1 1>&2 2>&3)
 
@@ -135,8 +143,7 @@ step 10 "Adding APT repos & updating"
 run "apt-get update -y"
 run "apt-get install -y software-properties-common curl wget gnupg lsb-release"
 
-# Ondrej PHP
-run "add-apt-repository -y ppa:ondrej/php"
+
 # Caddy
 run "curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy.gpg"
 echo "deb [signed-by=/usr/share/keyrings/caddy.gpg] https://dl.cloudsmith.io/public/caddy/stable/deb/ $(lsb_release -cs) main" >/etc/apt/sources.list.d/caddy.list
