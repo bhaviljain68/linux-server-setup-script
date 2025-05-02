@@ -179,8 +179,15 @@ fi
 step 35 "PostgreSQL 17"
 run apt-get install -y postgresql-17 postgresql-client-17
 run systemctl enable --now postgresql@17-main
-(( !DRY_RUN )) && sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'" | grep -q 1 ||
-    sudo -u postgres psql -c "CREATE ROLE $DB_USER LOGIN PASSWORD '$DB_PASS' NOSUPERUSER CREATEDB;"
+
+if (( !DRY_RUN )); then
+    sudo -u postgres psql -tc \
+      "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'" | grep -q 1 ||
+    sudo -u postgres psql -c \
+      "CREATE ROLE $DB_USER LOGIN PASSWORD '$DB_PASS' NOSUPERUSER CREATEDB;"
+else
+    echo "DRY: create role $DB_USER in Postgres"
+fi
 
 
 
