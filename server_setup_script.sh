@@ -138,6 +138,7 @@ run chown -R "$NEW_USER:$NEW_USER" "/home/$NEW_USER/.ssh"
 
 step 10 "Installing Caddy"
 run apt-get install -y caddy
+
 ensure_file /etc/caddy/Caddyfile
 run "cat >/etc/caddy/Caddyfile <<'EOF'
 {
@@ -158,7 +159,13 @@ run apt-get install -y $PHP_PKGS
 run systemctl enable --now "php$PHP_VERSION-fpm"
 
 step 25 "Composer"
-run curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+if (( !DRY_RUN )); then
+    # real install
+    curl -sS https://getcomposer.org/installer \
+      | php -- --install-dir=/usr/local/bin --filename=composer
+else
+    echo "DRY: install Composer"
+fi
 
 step 30 "Node (NVM LTS)"
 if (( !DRY_RUN )); then
