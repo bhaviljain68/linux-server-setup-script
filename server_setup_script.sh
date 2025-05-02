@@ -32,18 +32,31 @@ real apt-get install -y whiptail software-properties-common curl wget gnupg lsb-
 
 # Ondřej PHP PPA
 real add-apt-repository -y ppa:ondrej/php
-# PGDG repo + key
-real wget -qO /usr/share/keyrings/pgdg.gpg https://www.postgresql.org/media/keys/ACCC4CF8.asc
-echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] \
+
+# --- PGDG repository (Ubuntu 24.04) ---
+real curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+    | gpg --dearmor -o /usr/share/keyrings/postgresql.gpg
+echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] \
 http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
 > /etc/apt/sources.list.d/pgdg.list
+
 # Caddy stable repo + key
+# real curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
+# | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+# echo "deb [signed-by=/usr/share/keyrings/caddy-stable-archive-keyring.gpg] \
+# https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main" \
+# > /etc/apt/sources.list.d/caddy-stable.list
+
+# --- Caddy stable repository ---
 real curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
-| gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-echo "deb [signed-by=/usr/share/keyrings/caddy-stable-archive-keyring.gpg] \
+    | gpg --dearmor -o /usr/share/keyrings/caddy.gpg
+echo "deb [signed-by=/usr/share/keyrings/caddy.gpg] \
 https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main" \
 > /etc/apt/sources.list.d/caddy-stable.list
+
+
 real apt-get update -qq
+real apt-get install -y whiptail
 
 ###############################################################################
 ############################  INTERACTIVE PROMPTS  ############################
