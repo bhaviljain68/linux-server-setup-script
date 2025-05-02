@@ -26,6 +26,12 @@ step()      { local pct=$1 msg=$2; ((DRY_RUN)) && echo "[$pct%] $msg" ||
 ############## Sanity check ###################################################
 (( EUID != 0 )) && { echo "Run with sudo or as root"; exit 1; }
 
+# --- scrub any stale repo files first ---------------------------------------
+rm -f /etc/apt/sources.list.d/pgdg.list \
+      /etc/apt/sources.list.d/caddy.list \
+      /etc/apt/sources.list.d/caddy-stable.list 
+
+
 ############## Minimal bootstrap (runs even in dry-run) #######################
 real apt-get update -qq
 real apt-get install -y whiptail software-properties-common curl wget gnupg lsb-release ca-certificates
@@ -169,7 +175,15 @@ run systemctl enable --now postgresql@17-main
 (( !DRY_RUN )) && sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'" | grep -q 1 ||
     sudo -u postgres psql -c "CREATE ROLE $DB_USER LOGIN PASSWORD '$DB_PASS' NOSUPERUSER CREATEDB;"
 
+
+
 step 40 "Cockpit + phpPgAdmin"
+
+# ---- workaround flatpak postinst bug on Ubuntu 24.04 -------------
+real id -u flatpak &>/dev/null || \
+real adduser --system --quiet --home / --no-create-home --shell /usr/sbin/nologin \
+            --gecos flatpak flatpak
+
 run apt-get install -y cockpit phppgadmin
 run systemctl enable --now cockpit.socket
 
