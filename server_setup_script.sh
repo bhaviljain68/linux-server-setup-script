@@ -34,29 +34,44 @@ real apt-get install -y whiptail software-properties-common curl wget gnupg lsb-
 real add-apt-repository -y ppa:ondrej/php
 
 # --- PGDG repository (Ubuntu 24.04) ---
+# real curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+#     | gpg --dearmor -o /usr/share/keyrings/postgresql.gpg
+# echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] \
+# http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+# > /etc/apt/sources.list.d/pgdg.list
+
+# --- PostgreSQL PGDG repository (Ubuntu 24.04) ------------------------------
+# 1) binary key into /usr/share/keyrings
 real curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
-    | gpg --dearmor -o /usr/share/keyrings/postgresql.gpg
+    | gpg --dearmor -o /usr/share/keyrings/postgresql.gpg      # ← official name :contentReference[oaicite:0]{index=0}
+# 2) repo line that points to the key
 echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] \
 http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
 > /etc/apt/sources.list.d/pgdg.list
 
-# Caddy stable repo + key
+
+# --- Caddy stable repo ------------------------------------------------------
 # real curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
-# | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-# echo "deb [signed-by=/usr/share/keyrings/caddy-stable-archive-keyring.gpg] \
+#     | gpg --dearmor -o /usr/share/keyrings/caddy.gpg
+# echo "deb [signed-by=/usr/share/keyrings/caddy.gpg] \
 # https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main" \
 # > /etc/apt/sources.list.d/caddy-stable.list
 
-# --- Caddy stable repository ---
+
+# --- Caddy ---
+# remove obsolete list (it points at …/debian noble)
+rm -f /etc/apt/sources.list.d/caddy.list 2>/dev/null
+
+# --- Caddy stable repo ------------------------------------------------------
 real curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
-    | gpg --dearmor -o /usr/share/keyrings/caddy.gpg
+     | gpg --dearmor -o /usr/share/keyrings/caddy.gpg
 echo "deb [signed-by=/usr/share/keyrings/caddy.gpg] \
 https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main" \
-> /etc/apt/sources.list.d/caddy-stable.list
+> /etc/apt/sources.list.d/caddy-stable.list      # ← any-version is the only path Cloudsmith hosts :contentReference[oaicite:2]{index=2}
 
 
 real apt-get update -qq
-real apt-get install -y whiptail
+real apt-get install -y whiptail software-properties-common curl wget gnupg lsb-release ca-certificates
 
 ###############################################################################
 ############################  INTERACTIVE PROMPTS  ############################
