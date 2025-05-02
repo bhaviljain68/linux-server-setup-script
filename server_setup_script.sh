@@ -1,3 +1,9 @@
+# START COMMANDS
+# chmod +x server_setup_script.sh
+# sudo ./server_setup_script.sh
+# sudo ./server_setup_script.sh --dry-run
+# END COMMANDS
+
 #!/usr/bin/env bash
 ###############################################################################
 #  Laravel Server Bootstrap – Ubuntu 24.04
