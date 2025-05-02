@@ -139,11 +139,11 @@ run chown -R "$NEW_USER:$NEW_USER" "/home/$NEW_USER/.ssh"
 step 10 "Installing Caddy"
 run apt-get install -y caddy
 ensure_file /etc/caddy/Caddyfile
-cat >/etc/caddy/Caddyfile <<EOF
+run "cat >/etc/caddy/Caddyfile <<'EOF'
 {
     email $ACME_EMAIL
 }
-EOF
+EOF"
 
 step 20 "Installing PHP $PHP_VERSION + modules"
 PHP_PKGS="php$PHP_VERSION php$PHP_VERSION-fpm php$PHP_VERSION-cli php$PHP_VERSION-common"
